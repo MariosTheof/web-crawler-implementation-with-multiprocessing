@@ -10,11 +10,13 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from pathlib import Path
     
-#TODO eg. assets subfolder to be made automatically
+#TODO image download
 
-url = "https://huyenchip.com"
+url = "http://eloquentix.com/"
 path = os.path.abspath('C:/Users/Athma_000/Desktop/')
              
+write_files_to_disk(path, url)
+
 def get_page_html(url):
     # initialize a session
     session = requests.Session()
@@ -42,7 +44,6 @@ def get_js_files_list(soup):
 
     for script in soup.find_all("script"):
         if script.attrs.get("src"):
-            print(urljoin(url,script.attrs.get("href")))
             script_url = urljoin(url, script.attrs.get("src"))
             script_files.append(script_url)          
     
@@ -64,7 +65,7 @@ def write_html_to_local_file(soup, path):
             name = script.attrs.get("src").split('/')[-1]
             script.attrs['src'] = name
     name = soup.title.text + '.html'
-    f = open(os.path.join(path , name), "w")
+    f = open(os.path.join(path , name), "w", -1 , "utf-8")
     f.write(str(soup))
     f.close()
 
@@ -72,19 +73,30 @@ def write_html_to_local_file(soup, path):
 def write_assets_to_local_directory(files, path):
     for url in files:
         if not file_exists_locally(url, path):
+            print(url)
+
             page_content = download_file(url)
-            
             name = url.split('/')[-1]
-#            print(str(page_content))
-            f = open(os.path.join(path , name), "w")
-            f.write(str(page_content))
-            f.close()
+            try:
+                with open(os.path.join(path , name), "w", -1, "utf-8") as f:    
+                    f.write(page_content)
+            except:
+                print("Not supported encoding")
+            
+
 
 def file_exists_locally(url, path):
     name = url.split('/')[-1]
     path_to_file = Path(path + name)
-    return path_to_file.is_file()
+    print(path_to_file)
+    try:
+        return path_to_file.exists()
+    except:
+        return False
         
+write_files_to_disk(path, url)
+
+
 def download_file(url):
     ''' Not using session, because script/css files will not appear differently for crawlers.
     '''
