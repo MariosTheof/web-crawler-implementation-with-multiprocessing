@@ -11,96 +11,69 @@ import threading
 import time
 from bs4 import BeautifulSoup
 
-def search_links(q, urls, seen):
-#    while searching_process.is_set():
-    while 1:
-        try:
-#            print("I thread : " + str(threading.current_thread()) + " I request access to the queue ")                        
-            url, level = q.get_nowait()
-#            print("I thread : " + str(threading.current_thread()) + " received url: " + str(url)
-#            +" and level : " + str(level))
-            q.task_done()
-        except queue.Empty:
-#            print("Queue empty")
-            continue
+seen = set()
 
-        if level == 0: 
-            print("REACHED ZERO")
-            break
 
-        if stop_threads == True:
-            break
-        
-        try:
-            soup = BeautifulSoup(requests.get(url).text, "html.parser")
-            
-            for x in soup.find_all('a'): 
-    
-                link = x.get("href")
-                
-                if link and link[0] in "#/":
-                    link = start_url + link
-    
-    
-                if start_url not in link:
-                    continue
-                
-                if link not in seen:
-                    seen.add(link)
-                    urls.append(link) 
-                    q.put((link, level - 1))
-#                    print("I thread : " + str(threading.current_thread()) + " I put " + str(link) +" in queue")
-#                    print(" ")
-#                try:
-#                    print(" ")
-#                    for q_link in q.queue:
-#                        print(q_link)
-                        
-#                    print("#################################")
-#                except Exception as e:
-##                    print(e)
-#                    print("Q is probably empty")
-#                    continue
-        except Exception as e:
-#            print(e)
-#            print(threading.active_count())
-            continue
-#
-
-if __name__ == "__main__":
-    stop_threads = False
-    levels = 2
-    workers = 10
-#    start_url = "https://huyenchip.com/"
-#    start_url = "http://eloquentix.com"
-    start_url = "https://www.gatesnotes.com/"
-
-    seen = set()
+def main(url, depth, workers):
+    global start_url
+    start_url = url
     urls = []
-
     threads = []
     q = queue.Queue()
-    q.put((start_url, levels))
+
+    q.put((start_url, depth))
     start = time.time()
-    
-#    searching_process = threading.Event()
-#    searching_process.set()
-    
+
     for _ in range(workers):
         t = threading.Thread(target=search_links, args=(q, urls, seen))
         threads.append(t)
         t.daemon = True
         t.start()
-    
-#    time.sleep(20)
-#    searching_process.clear()
-    
+
     for thread in threads:
         print("JOIN ME  : " + str(thread))
         thread.join(5.0)
 
-
     print(f"Found {len(urls)} URLs using {workers} workers "
-          f"{levels} levels deep in {time.time() - start}s")
-    
+          f"{depth} levels deep in {time.time() - start}s")
+
+
+def search_links(q, urls, seen):
+#    while searching_process.is_set():
+    while 1:
+        try:
+            url, level = q.get_nowait()
+            q.task_done()
+        except queue.Empty:
+            continue
+
+        if level == 0:
+            break
+
+        try:
+            soup = BeautifulSoup(requests.get(url).text, "html.parser")
+            for x in soup.find_all('a'):
+                # get link title
+                link = x.get("href")
+
+                if link and link[0] in "#/": # if link title is '/' or starts '#/', then concatanate it to main url string
+                    link = start_url + link
+                if is_link_valid(link):
+                    seen.add(link)
+                    urls.append(link)
+                    q.put((link, level - 1))
+        except:
+            continue
+
+def is_link_valid(link):
+    ''' Checks if link is valid. Specifically if it is within domain and if has been see before'''
+    if start_url not in link:
+        return False
+    if link not in seen:
+        return True
+    return False
+
+
+
+
     
