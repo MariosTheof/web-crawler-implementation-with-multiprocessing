@@ -11,6 +11,13 @@ it is however recommended that depth is kept to around 2-3, as the volumes of pa
 The user can also specify the number of threads/workers that will work on the task of crawling through a website and downloading it. Their numbers can sometimes drastically improve 
 the program's efficiency. 
 For example :
+I used 10 workers for www.gatesnotes.com :
+![](pics/first.png)
+
+Here's for 20 workers instead:
+![](pics/second.png)
+
+An improvement! ps. This was done in a rather slow internet connection.
 
 Lastly, the user can choose a website of his choosing to download.
 
