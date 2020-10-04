@@ -1,8 +1,9 @@
 # A concurrent web crawler that downloads webpages.
 A cli crawler implementation that downloads websites, with multithreading written in python. I chose threads because I/O to disk or to network can have unpredictable delays.
-Threads allow you to ensure that I/O latency does not delay unrelated parts of your application. The crawling was done with the requests library and BeautifulSoup4 for parsing the html. The download itself was done with wget, even though download_files.py almost has the same functionality.  
-I choose to use wget instead because the --timestamp flag allowed the program to speed up as it did not have to re-download every file, but at the same time if a file with the same
-name changed it would check the timestamp and download it anew.
+Threads allow you to ensure that I/O latency does not delay unrelated parts of your application.
+
+The crawling was done with the requests library and BeautifulSoup4 for parsing the html. The download itself was done with wget, even though download_files.py almost has the same functionality.  I choose to use wget instead because the --timestamp flag allowed the program to speed up as it did not have to re-download every file, but at the same time if a file with the same name changed it would check the timestamp and download it anew.
+
 The end result will be a folder with all the files needed to view the site locally.
 
 The user can specify the depth that the crawler will go to, 
